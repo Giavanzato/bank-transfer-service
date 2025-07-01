@@ -84,7 +84,6 @@ export class TransfersService {
             },
           });
         },
-        { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
       );
       return result;
     } catch (error) {

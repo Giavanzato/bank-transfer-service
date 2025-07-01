@@ -39,13 +39,13 @@ generate:
 	$(COMPOSE) exec app npx prisma generate
 
 studio:
-	$(COMPOSE) exec app npx prisma studio --host 0.0.0.0 --port 5555
+	$(COMPOSE) exec app npx prisma studio --port 5555
 
 clean:
 	@echo "→ Entferne Container, Netzwerke, Volumes und Images…"
 	$(COMPOSE) down --volumes --rmi all --remove-orphans
 
-rebuild: clean build up
+rebuild: clean build up prisma
 	@echo "Neustart komplett abgeschlossen."
 
 generate-local:

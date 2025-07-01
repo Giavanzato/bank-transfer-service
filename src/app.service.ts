@@ -18,7 +18,7 @@ export class AppService {
       data: {
         firstName: 'Alice',
         lastName: 'Muster',
-        iban: 'DE12500105170648489890',
+        iban: 'DE75512108001245126199',
         currency: 'EUR',
         balance: 1000, // initialer Kontostand
         limit: 0, // Überziehungslimit
@@ -31,7 +31,7 @@ export class AppService {
       data: {
         firstName: 'Bob',
         lastName: 'Beispiel',
-        iban: 'DE44500105178821782364',
+        iban: 'DE75512108001245126199',
         currency: 'EUR',
         balance: 500,
         limit: 0,

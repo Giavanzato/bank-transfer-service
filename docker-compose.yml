@@ -1,28 +1,46 @@
 version: '3.8'
+
 services:
   db:
-    image: postgres:15
+    image: postgres:15-alpine
     restart: always
+    env_file:
+      - .env
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: bank
-    ports:
-      - '5432:5432'
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  api:
-    build: .
+  # === Dev-Container für Nest mit hot reload ===
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder # <-- hier die Builder-Stage nutzen
     restart: always
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
     environment:
-      DATABASE_URL: postgres://postgres:postgres@db:5432/bank
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      NODE_ENV: development
     ports:
       - '3000:3000'
+      - '5555:5555'
     volumes:
-      - .:/app
-      - /app/node_modules
+      - ./:/usr/src/app # mount Dein Projekt rein
+      - node_modules:/usr/src/app/node_modules # behalte die Container-Modules
+    command: npm run start:dev
+
 volumes:
-  db-data:
+  db_data:
+  node_modules:

@@ -1,22 +1,60 @@
-# Makefile zur Verwaltung des Docker-Stacks für NestJS und PostgreSQL
+# Host-seitige Paketinstallation (npm oder yarn)
+.PHONY: install ensure-prisma
 
-.PHONY: build up down logs restart
+install:
+	@if [ -f yarn.lock ]; then \
+		yarn install --frozen-lockfile; \
+	else \
+		npm ci; \
+	fi
 
-# Image-Build für API und DB
+ensure-prisma:
+	@if ! grep -q '"prisma":' package.json; then \
+		if [ -f yarn.lock ]; then \
+			yarn add prisma --dev; \
+		else \
+			npm install prisma --save-dev; \
+		fi \
+	fi
+
+# Docker Compose Kurzbefehle
+COMPOSE = docker compose
+
+.PHONY: build up down logs migrate generate seed studio pull
+
 build:
-	docker-compose build
+	$(COMPOSE) build
 
-# Startet Container (detached)
 up:
-	docker-compose up -d
+	$(COMPOSE) up -d
 
-# Stoppt und entfernt Container
 down:
-	docker-compose down
+	$(COMPOSE) down
 
-# Zeigt Live-Logs aller Dienste
-tools:
-	docker-compose logs -f
+logs:
+	$(COMPOSE) logs -f
 
-# Neustart
-restart: down up
+# Prisma-Targets im Container (stellt sicher, dass Prisma CLI vorhanden ist)
+migrate: ensure-prisma
+	$(COMPOSE) exec app npx prisma migrate deploy
+
+generate: ensure-prisma
+	$(COMPOSE) exec app npx prisma generate
+
+seed:
+	$(COMPOSE) exec app npm run seed
+
+# Prisma Studio GUI (öffnet auf http://localhost:5555)
+studio: ensure-prisma
+	$(COMPOSE) exec app npx prisma studio --port 5555
+
+# Aktuelles DB-Schema ins Prisma-Schema zurückziehen
+pull: ensure-prisma
+	$(COMPOSE) exec app npx prisma db pull
+
+clean:
+	@echo "→ Entferne Container, Netzwerke, Volumes und Images…"
+	$(COMPOSE) down --volumes --rmi all --remove-orphans
+
+rebuild: clean build up
+	@echo "Neustart komplett abgeschlossen."

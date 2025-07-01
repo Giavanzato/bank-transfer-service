@@ -46,7 +46,7 @@ seed:
 
 # Prisma Studio GUI (öffnet auf http://localhost:5555)
 studio: ensure-prisma
-	$(COMPOSE) exec app npx prisma studio --port 5555
+	$(COMPOSE) exec app npx prisma studio  --port 5555
 
 # Aktuelles DB-Schema ins Prisma-Schema zurückziehen
 pull: ensure-prisma

@@ -1,0 +1,37 @@
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+model Account {
+    id        String        @id @default(uuid())
+    firstName String
+    lastName  String
+    iban      String        @unique
+    currency  String        @default("EUR")
+    balance   Decimal       @default(0.0)
+    limit     Decimal       @default(0.0)
+    sentTx    Transaction[] @relation("sentTx")
+    recvTx    Transaction[] @relation("recvTx")
+}
+
+model Transaction {
+    id                String   @id @default(uuid())
+    fromAccountId     String
+    toAccountId       String
+    amount            Decimal
+    purpose           String
+    status            String   @default("SUCCESS")
+    balanceBeforeFrom Decimal
+    balanceAfterFrom  Decimal
+    balanceBeforeTo   Decimal
+    balanceAfterTo    Decimal
+    createdAt         DateTime @default(now())
+
+    fromAccount Account @relation("sentTx", fields: [fromAccountId], references: [id])
+    toAccount   Account @relation("recvTx", fields: [toAccountId], references: [id])
+}

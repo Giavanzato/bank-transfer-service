@@ -36,10 +36,12 @@ services:
     ports:
       - '3000:3000'
       - '5555:5555'
+      - '9229:9229'
     volumes:
       - ./:/usr/src/app # mount Dein Projekt rein
       - node_modules:/usr/src/app/node_modules # behalte die Container-Modules
-    command: npm run start:dev
+
+    command: npm run start:debug
 
 volumes:
   db_data:

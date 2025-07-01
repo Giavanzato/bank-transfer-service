@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Attach to Nest (Docker)",
+        "type": "node",
+        "request": "attach",
+        "protocol": "inspector",
+        "address": "localhost",
+        "port": 9229,
+        "restart": true,
+        "localRoot": "${workspaceFolder}",
+        "remoteRoot": "/usr/src/app",
+        "skipFiles": ["<node_internals>/**"]
+      }
+    ]
+  }
+  

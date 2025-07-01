@@ -20,7 +20,7 @@ ensure-prisma:
 # Docker Compose Kurzbefehle
 COMPOSE = docker compose
 
-.PHONY: build up down logs migrate generate seed studio pull
+.PHONY: build up down logs migrate migrate-dev db-push generate seed studio pull clean rebuild
 
 build:
 	$(COMPOSE) build
@@ -34,24 +34,20 @@ down:
 logs:
 	$(COMPOSE) logs -f
 
-# Prisma-Targets im Container (stellt sicher, dass Prisma CLI vorhanden ist)
-migrate: ensure-prisma
-	$(COMPOSE) exec app npx prisma migrate deploy
+# Schiebt das schema.prisma direkt in die DB (ohne Migrations-Files)
+db-push: ensure-prisma
+	$(COMPOSE) exec app npx prisma db push
 
+# Prisma-Client regenerieren
 generate: ensure-prisma
 	$(COMPOSE) exec app npx prisma generate
 
-seed:
-	$(COMPOSE) exec app npm run seed
 
 # Prisma Studio GUI (öffnet auf http://localhost:5555)
 studio: ensure-prisma
-	$(COMPOSE) exec app npx prisma studio  --port 5555
+	$(COMPOSE) exec app npx prisma studio --port 5555
 
-# Aktuelles DB-Schema ins Prisma-Schema zurückziehen
-pull: ensure-prisma
-	$(COMPOSE) exec app npx prisma db pull
-
+# Volumes/Images nur bei clean, nicht bei down
 clean:
 	@echo "→ Entferne Container, Netzwerke, Volumes und Images…"
 	$(COMPOSE) down --volumes --rmi all --remove-orphans

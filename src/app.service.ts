@@ -5,6 +5,7 @@ import Decimal from 'decimal.js';
 export class AppService {
   constructor(private readonly prisma: PrismaService) {}
   getHello(): string {
+    throw new BadRequestException('This is a bad request example');
     return 'Hello World!';
   }
 
@@ -18,7 +19,7 @@ export class AppService {
       data: {
         firstName: 'Alice',
         lastName: 'Muster',
-        iban: 'DE75512108001245126199',
+        iban: 'DE89370400440532013000',
         currency: 'EUR',
         balance: 1000, // initialer Kontostand
         limit: 0, // Überziehungslimit

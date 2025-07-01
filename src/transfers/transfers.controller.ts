@@ -26,7 +26,7 @@ export class TransfersController {
     return this.transfersService.createTransaction(dto);
   }
 
-  @Get()
+  /* @Get()
   @ApiOperation({ summary: 'Liste alle Überweisungen' })
   @ApiResponse({ status: 200, type: [TransferEntity] })
   async findAll() {
@@ -53,5 +53,5 @@ export class TransfersController {
   @ApiResponse({ status: 200, description: 'Gelöscht' })
   async remove(@Param('id') id: string) {
     return this.transfersService.remove(id);
-  }
+  } */
 }

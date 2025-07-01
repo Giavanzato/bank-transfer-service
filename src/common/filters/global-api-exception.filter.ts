@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 // src/common/filters/global-api-exception.filter.ts
+// src/common/filters/global-api-exception.filter.ts
 import {
   ExceptionFilter,
   Catch,
@@ -16,34 +17,37 @@ export class GlobalApiExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
-    // Default-Werte
     let statusCode = 500;
-    let message = 'Internal server error';
+    let errorMessage = 'Internal server error';
     let errorType = 'InternalServerError';
 
     if (exception instanceof HttpException) {
       statusCode = exception.getStatus();
       const exRes = exception.getResponse();
       if (typeof exRes === 'string') {
-        message = exRes;
+        errorMessage = exRes;
         errorType = exception.name;
       } else if (typeof exRes === 'object' && exRes !== null) {
-        message = (exRes as any).message || exception.message;
+        errorMessage = (exRes as any).message || exception.message;
         errorType = (exRes as any).error || exception.name;
       }
     } else if (exception instanceof Error) {
-      message = exception.message;
+      // Für "rohe" Fehler nimm als Hauptmessage lieber eine generische,
+      // und packe die Originalmeldung ins error-Objekt!
+      errorMessage = 'Ein unerwarteter Fehler ist aufgetreten.';
       errorType = exception.name;
     }
 
+    // Im error-Objekt kannst du die Exception voll durchreichen
     const errorObj: CustomApiError = {
       statusCode,
-      message,
+      message: exception instanceof Error ? exception.message : errorMessage,
       error: errorType,
     };
 
+    // Die *kurze* Message nach außen
     response
       .status(statusCode)
-      .json(ApiResponseHelper.error(message, errorObj));
+      .json(ApiResponseHelper.error(errorMessage, errorObj));
   }
 }

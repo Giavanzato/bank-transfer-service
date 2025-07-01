@@ -39,7 +39,7 @@ services:
       - '9229:9229'
     volumes:
       - ./:/usr/src/app # mount Dein Projekt rein
-      - node_modules:/usr/src/app/node_modules # behalte die Container-Modules
+      # - node_modules:/usr/src/app/node_modules # behalte die Container-Modules
 
     command: npm run start:debug
 

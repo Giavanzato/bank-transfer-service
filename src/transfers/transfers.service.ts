@@ -87,7 +87,6 @@ export class TransfersService {
       );
       return result;
     } catch (error) {
-      console.error('Transaction error:', error);
       if (
         error instanceof NotFoundException ||
         error instanceof BadRequestException
@@ -98,7 +97,7 @@ export class TransfersService {
     }
   }
 
-  async findAll() {
+  /* async findAll() {
     return this.prisma.transaction.findMany();
   }
 
@@ -120,5 +119,5 @@ export class TransfersService {
     await this.findOne(id);
     await this.prisma.transaction.delete({ where: { id } });
     return { deleted: true };
-  }
+  } */
 }

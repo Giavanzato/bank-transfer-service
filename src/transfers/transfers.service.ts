@@ -2,6 +2,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
@@ -13,60 +14,82 @@ export class TransfersService {
   constructor(private readonly prisma: PrismaService) {}
 
   async createTransaction(dto: CreateTransferDto) {
-    const { fromIban, toIban, amount, purpose } = dto;
+    try {
+      const result = await this.prisma.$transaction(async (tx) => {
+        // 1) Load source account
+        const fromAccount = await tx.account.findUnique({
+          where: { iban: dto.fromIban },
+        });
+        if (!fromAccount) {
+          throw new NotFoundException(
+            `Account mit IBAN ${dto.fromIban} nicht gefunden`,
+          );
+        }
 
-    return this.prisma.$transaction(async (tx) => {
-      // 1) Konten nach IBAN laden
-      const fromAccount = await tx.account.findUnique({
-        where: { iban: fromIban },
-      });
-      if (!fromAccount)
-        throw new NotFoundException(
-          `Account mit IBAN ${fromIban} nicht gefunden`,
-        );
-      const toAccount = await tx.account.findUnique({
-        where: { iban: toIban },
-      });
-      if (!toAccount)
-        throw new NotFoundException(
-          `Account mit IBAN ${toIban} nicht gefunden`,
-        );
+        // 2) Load destination account
+        const toAccount = await tx.account.findUnique({
+          where: { iban: dto.toIban },
+        });
+        if (!toAccount) {
+          throw new NotFoundException(
+            `Account mit IBAN ${dto.toIban} nicht gefunden`,
+          );
+        }
 
-      // 2) Salden berechnen
-      const balanceBeforeFrom = fromAccount.balance;
-      const balanceAfterFrom = balanceBeforeFrom.minus(amount);
-      if (balanceAfterFrom.lt(fromAccount.limit.neg())) {
-        throw new BadRequestException('Überziehungslimit überschritten');
+        // 3) Calculate balances
+        const balanceBeforeFrom = fromAccount.balance;
+        const balanceAfterFrom = balanceBeforeFrom.minus(dto.amount);
+        const balanceBeforeTo = toAccount.balance;
+        const balanceAfterTo = balanceBeforeTo.plus(dto.amount);
+
+        // 4) Check overdraft limit
+        if (balanceAfterFrom.lt(fromAccount.limit.neg())) {
+          throw new BadRequestException('Überziehungslimit überschritten');
+        }
+
+        // 5) Update source account balance
+        await tx.account.update({
+          where: { iban: dto.fromIban },
+          data: { balance: balanceAfterFrom },
+        });
+
+        // 6) Update destination account balance
+        await tx.account.update({
+          where: { iban: dto.toIban },
+          data: { balance: balanceAfterTo },
+        });
+
+        // 7) Create the transaction record
+        return tx.transaction.create({
+          data: {
+            fromAccountId: fromAccount.id,
+            toAccountId: toAccount.id,
+            amount: dto.amount,
+            purpose: dto.purpose,
+            status: 'SUCCESS',
+            balanceBeforeFrom,
+            balanceAfterFrom,
+            balanceBeforeTo,
+            balanceAfterTo,
+            // createdAt per @default(now())
+          },
+        });
+      });
+
+      return result;
+    } catch (error) {
+      // Bekannte Fehler 1:1 weiterwerfen
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
+        throw error;
       }
-      const balanceBeforeTo = toAccount.balance;
-      const balanceAfterTo = balanceBeforeTo.plus(amount);
-
-      // 3) Konten aktualisieren
-      await tx.account.update({
-        where: { iban: fromIban },
-        data: { balance: balanceAfterFrom },
-      });
-      await tx.account.update({
-        where: { iban: toIban },
-        data: { balance: balanceAfterTo },
-      });
-
-      // 4) Transaktion anlegen und alle Pflichtfelder mitliefern
-      return tx.transaction.create({
-        data: {
-          fromAccountId: fromAccount.id,
-          toAccountId: toAccount.id,
-          amount,
-          purpose,
-          status: 'SUCCESS',
-          balanceBeforeFrom: balanceBeforeFrom,
-          balanceAfterFrom: balanceAfterFrom,
-          balanceBeforeTo: balanceBeforeTo,
-          balanceAfterTo: balanceAfterTo,
-          // createdAt bekommt Prisma per Default(now()) automatisch
-        },
-      });
-    });
+      // Alle anderen als HTTP 500
+      throw new InternalServerErrorException(
+        'Es ist ein unerwarteter Fehler aufgetreten bei der Transaktion',
+      );
+    }
   }
 
   async findAll() {

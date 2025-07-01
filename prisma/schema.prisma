@@ -8,15 +8,17 @@ generator client {
 }
 
 model Account {
-    id        String        @id @default(uuid())
-    firstName String
-    lastName  String
-    iban      String        @unique
-    currency  String        @default("EUR")
-    balance   Decimal       @default(0.0)
-    limit     Decimal       @default(0.0)
-    sentTx    Transaction[] @relation("sentTx")
-    recvTx    Transaction[] @relation("recvTx")
+    id           String        @id @default(uuid())
+    firstName    String
+    lastName     String
+    iban         String        @unique
+    currency     String        @default("EUR")
+    balance      Decimal       @default(0.0)
+    limit        Decimal       @default(0.0)
+    dailyLimit   Decimal       @default(5000) // neu: Tageslimit (EUR)
+    amlThreshold Decimal       @default(10000)
+    sentTx       Transaction[] @relation("sentTx")
+    recvTx       Transaction[] @relation("recvTx")
 }
 
 model Transaction {

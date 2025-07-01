@@ -1,5 +1,6 @@
-# Host-seitige Paketinstallation (npm oder yarn)
-.PHONY: install ensure-prisma
+.PHONY: install ensure-prisma build up down logs prisma studio clean rebuild generate
+
+COMPOSE = docker compose
 
 install:
 	@if [ -f yarn.lock ]; then \
@@ -17,11 +18,6 @@ ensure-prisma:
 		fi \
 	fi
 
-# Docker Compose Kurzbefehle
-COMPOSE = docker compose
-
-.PHONY: build up down logs migrate migrate-dev db-push generate seed studio pull clean rebuild
-
 build:
 	$(COMPOSE) build
 
@@ -34,23 +30,23 @@ down:
 logs:
 	$(COMPOSE) logs -f
 
-# Schiebt das schema.prisma direkt in die DB (ohne Migrations-Files)
-db-push: ensure-prisma
-	$(COMPOSE) exec app npx prisma db push
-
-# Prisma-Client regenerieren
-generate: ensure-prisma
+# Prisma-Jobs: Migration & Client-Generierung
+prisma:
+	$(COMPOSE) exec app npx prisma migrate dev --name autoupdate
 	$(COMPOSE) exec app npx prisma generate
 
+generate:
+	$(COMPOSE) exec app npx prisma generate
 
-# Prisma Studio GUI (öffnet auf http://localhost:5555)
-studio: ensure-prisma
-	$(COMPOSE) exec app npx prisma studio --port 5555
+studio:
+	$(COMPOSE) exec app npx prisma studio --host 0.0.0.0 --port 5555
 
-# Volumes/Images nur bei clean, nicht bei down
 clean:
 	@echo "→ Entferne Container, Netzwerke, Volumes und Images…"
 	$(COMPOSE) down --volumes --rmi all --remove-orphans
 
 rebuild: clean build up
 	@echo "Neustart komplett abgeschlossen."
+
+generate-local:
+	npx prisma generate

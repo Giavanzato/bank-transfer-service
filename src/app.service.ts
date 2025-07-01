@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
-
+import Decimal from 'decimal.js';
 @Injectable()
 export class AppService {
   constructor(private readonly prisma: PrismaService) {}
@@ -13,15 +13,17 @@ export class AppService {
     accountB: any;
     transaction: any;
   }> {
-    // 1) Accounts anlegen
+    // 1) Accounts anlegen – jetzt mit dailyLimit und amlThreshold
     const accountA = await this.prisma.account.create({
       data: {
         firstName: 'Alice',
         lastName: 'Muster',
         iban: 'DE12500105170648489890',
         currency: 'EUR',
-        balance: 1000,
-        limit: 0,
+        balance: 1000, // initialer Kontostand
+        limit: 0, // Überziehungslimit
+        dailyLimit: 5000, // Tageslimit (EUR)
+        amlThreshold: 10000, // AML-Schwelle (EUR)
       },
     });
 
@@ -33,6 +35,8 @@ export class AppService {
         currency: 'EUR',
         balance: 500,
         limit: 0,
+        // dailyLimit: 5000,
+        // amlThreshold: 10000,
       },
     });
 
@@ -48,7 +52,7 @@ export class AppService {
         balanceAfterFrom: Number(accountA.balance) - 150,
         balanceBeforeTo: accountB.balance,
         balanceAfterTo: Number(accountB.balance) + 150,
-        // createdAt wird automatisch gesetzt
+        // createdAt wird automatisch per Default(now()) gesetzt
       },
     });
 

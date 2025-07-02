@@ -18,13 +18,12 @@ services:
       timeout: 5s
       retries: 5
 
-  # === Dev-Container für Nest mit hot reload ===
   app:
     build:
       context: .
       dockerfile: Dockerfile
-      target: builder # <-- hier die Builder-Stage nutzen
-    restart: always
+      target: dev
+    restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
@@ -34,15 +33,13 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       NODE_ENV: development
     ports:
-      - '3000:3000'
-      - '5555:5555'
-      - '9229:9229'
+      - '3000:3000' # NestJS API
+      - '5555:5555' # Prisma Studio
+      - '9229:9229' # Debugger
     volumes:
-      - ./:/usr/src/app # mount Dein Projekt rein
-      # - node_modules:/usr/src/app/node_modules # behalte die Container-Modules
-
-    command: npm run start:debug
+      - ./:/usr/src/app
+      - /usr/src/app/node_modules # WICHTIG: Verhindert Konflikte zwischen Host- und Container-Node_Modules!
+    command: yarn start:dev
 
 volumes:
   db_data:
-  node_modules:

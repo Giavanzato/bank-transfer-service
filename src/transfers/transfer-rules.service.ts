@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 // src/transfers/transfer-rules.service.ts
 import {
   BadRequestException,
@@ -26,7 +24,7 @@ export class TransferRulesService {
   static ensureAmlCompliance(amount: number, amlThreshold: Decimal) {
     if (new Decimal(amount).gt(new Decimal(amlThreshold))) {
       throw new BadRequestException(
-        `Betrag übersteigt AML-Schwelle von ${amlThreshold} EUR`,
+        `Betrag übersteigt AML-Schwelle von ${Number(amlThreshold)} EUR`,
       );
     }
   }
@@ -51,7 +49,7 @@ export class TransferRulesService {
     const todaySum = new Decimal(_sum.amount ?? 0);
     if (todaySum.plus(amount).gt(new Decimal(dailyLimit))) {
       throw new BadRequestException(
-        `Tägliches Limit von ${dailyLimit} EUR überschritten`,
+        `Tägliches Limit von ${Number(dailyLimit)} EUR überschritten`,
       );
     }
   }

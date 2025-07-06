@@ -5,7 +5,7 @@ import {
 import Decimal from 'decimal.js';
 import { Prisma } from '@prisma/client';
 
-export class TransferRulesService {
+export class TransactionRulesService {
   static ensureSufficientFundsAndLimit(
     balance: Decimal,
     limit: Decimal,

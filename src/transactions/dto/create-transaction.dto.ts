@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsIBAN, IsNotEmpty, IsNumber, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class CreateTransferDto {
+export class CreateTransactionDto {
   @ApiProperty({
     example: 'DE89370400440532013000',
     description: 'Absender-IBAN',

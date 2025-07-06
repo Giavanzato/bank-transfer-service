@@ -5,8 +5,13 @@ import Decimal from 'decimal.js';
 export class AppService {
   constructor(private readonly prisma: PrismaService) {}
   getHello(): string {
-    throw new BadRequestException('This is a bad request example');
-    return 'Hello World!';
+    return `
+    Willkommen zur Demo-API für Überweisungen im Zahlungsverkehr!
+    Diese API demonstriert, wie eine bankfachliche Transaktion, nachvollziehbar und regelbasiert verarbeitet werden – inklusive Prüfungen wie Kontosaldo, Tageslimit und Anti-Geldwäsche-Vorgaben.
+    **Wichtig:** Bitte rufen Sie vor der ersten Überweisung den /seed-Endpoint auf, um Testdaten (z.B. Beispielkonten) zu generieren.
+    Danach können Sie Überweisungen via /transaction anstoßen und die verschiedenen Prüf- und Fehlermechanismen nachvollziehen.
+    Viel Spaß beim Testen!
+  `;
   }
 
   async seed(): Promise<{
@@ -46,7 +51,7 @@ export class AppService {
         fromAccountId: accountA.id,
         toAccountId: accountB.id,
         amount: 150,
-        purpose: 'Test-Transfer',
+        purpose: 'Test-Transaction',
         status: 'SUCCESS',
         balanceBeforeFrom: accountA.balance,
         balanceAfterFrom: Number(accountA.balance) - 150,

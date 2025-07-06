@@ -7,22 +7,22 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { TransfersService } from './transfers.service';
-import { CreateTransferDto } from './dto/create-transfer.dto';
-import { UpdateTransferDto } from './dto/update-transfer.dto';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { TransferEntity } from './entities/transfer.entity';
+import { TransactionService } from './transaction.service';
+import { CreateTransactionDto } from './dto/create-transaction.dto';
 
-@ApiTags('transfers')
-@Controller('transfers')
-export class TransfersController {
-  constructor(private readonly transfersService: TransfersService) {}
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Transaction } from './entities/transaction.entity';
+
+@ApiTags('transaction')
+@Controller('transaction')
+export class TransactionController {
+  constructor(private readonly transactionService: TransactionService) {}
 
   @Post()
   @ApiOperation({ summary: 'Erstelle neue Überweisung' })
-  @ApiResponse({ status: 201, type: TransferEntity })
-  async create(@Body() dto: CreateTransferDto) {
-    return this.transfersService.createTransaction(dto);
+  @ApiResponse({ status: 201, type: Transaction })
+  async create(@Body() dto: CreateTransactionDto) {
+    return this.transactionService.createTransaction(dto);
   }
 
   /* @Get()

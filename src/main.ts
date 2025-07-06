@@ -24,7 +24,7 @@ async function bootstrap() {
 
   // Swagger/OpenAPI Setup
   const config = new DocumentBuilder()
-    .setTitle('Bank Transfer Service')
+    .setTitle('Bank Transactions Dummy Service')
     .setDescription('API-Dokumentation aller Endpunkte')
     .setVersion('1.0')
     .build();

@@ -1,4 +1,3 @@
-// src/transfers/transfers.service.ts
 import {
   BadRequestException,
   Injectable,
@@ -8,15 +7,15 @@ import {
 
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
-import { CreateTransferDto } from './dto/create-transfer.dto';
-import { UpdateTransferDto } from './dto/update-transfer.dto';
-import { TransferRulesService } from './transfer-rules.service';
+import { CreateTransactionDto } from './dto/create-transaction.dto';
+
+import { TransactionRulesService } from './transaction-rules.service';
 
 @Injectable()
-export class TransfersService {
+export class TransactionService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createTransaction(dto: CreateTransferDto) {
+  async createTransaction(dto: CreateTransactionDto) {
     try {
       const result = await this.prisma.$transaction(
         async (tx: Prisma.TransactionClient) => {
@@ -33,20 +32,20 @@ export class TransfersService {
             throw new NotFoundException('Empfänger-Account nicht gefunden');
 
           // 1. Kontosaldo & Limit prüfen
-          TransferRulesService.ensureSufficientFundsAndLimit(
+          TransactionRulesService.ensureSufficientFundsAndLimit(
             from.balance,
             from.limit,
             dto.amount,
           );
 
           // 2. AML-Regel prüfen
-          TransferRulesService.ensureAmlCompliance(
+          TransactionRulesService.ensureAmlCompliance(
             dto.amount,
             from.amlThreshold,
           );
 
           // 3. Tageslimit prüfen
-          await TransferRulesService.ensureDailyLimitNotExceeded(
+          await TransactionRulesService.ensureDailyLimitNotExceeded(
             tx,
             from.id,
             dto.amount,
@@ -103,7 +102,7 @@ export class TransfersService {
 
   async findOne(id: string) {
     const tx = await this.prisma.transaction.findUnique({ where: { id } });
-    if (!tx) throw new NotFoundException(`Transfer ${id} nicht gefunden`);
+    if (!tx) throw new NotFoundException(`Transaction ${id} nicht gefunden`);
     return tx;
   }
 

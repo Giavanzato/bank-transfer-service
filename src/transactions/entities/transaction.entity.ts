@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class TransferEntity {
-  @ApiProperty({ description: 'Transfer-ID (UUID)' })
+export class Transaction {
+  @ApiProperty({ description: 'Transaction-ID (UUID)' })
   id: string;
 
   @ApiProperty({ description: 'Absender-Account-ID (UUID)' })

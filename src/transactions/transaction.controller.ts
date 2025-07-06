@@ -13,7 +13,7 @@ import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Transaction } from './entities/transaction.entity';
 
-@ApiTags('transaction')
+@ApiTags('Transaction')
 @Controller('transaction')
 export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}

@@ -1,25 +1,73 @@
 import {
-  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma } from '@prisma/client';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
-
-import { TransactionRulesService } from './transaction-rules.service';
+import { checkAml, checkDaily, checkFunds } from './transaction-rules.service';
+import Decimal from 'decimal.js';
 
 @Injectable()
 export class TransactionService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createTransaction(dto: CreateTransactionDto) {
+  async createTransaction({
+    fromIban,
+    toIban,
+    amount,
+    purpose,
+  }: CreateTransactionDto) {
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        const [from, to] = await Promise.all([
+          tx.account.findUnique({ where: { iban: fromIban } }),
+          tx.account.findUnique({ where: { iban: toIban } }),
+        ]);
+
+        if (!from || !to) throw new NotFoundException('Konto nicht gefunden');
+
+        checkFunds(from.balance, from.limit, amount);
+        checkAml(amount, from.amlThreshold);
+        await checkDaily(tx, from.id, amount, from.dailyLimit);
+
+        const afterFrom = new Decimal(from.balance).minus(amount);
+        const afterTo = new Decimal(to.balance).plus(amount);
+
+        await Promise.all([
+          tx.account.update({
+            where: { iban: fromIban },
+            data: { balance: afterFrom },
+          }),
+          tx.account.update({
+            where: { iban: toIban },
+            data: { balance: afterTo },
+          }),
+        ]);
+
+        return tx.transaction.create({
+          data: {
+            fromAccountId: from.id,
+            toAccountId: to.id,
+            amount,
+            purpose,
+            status: 'SUCCESS',
+            balanceBeforeFrom: from.balance,
+            balanceAfterFrom: afterFrom,
+            balanceBeforeTo: to.balance,
+            balanceAfterTo: afterTo,
+          },
+        });
+      });
+    } catch (e) {
+      throw new InternalServerErrorException('Transaktion fehlgeschlagen');
+    }
+  }
+  /*async createTransaction(dto: CreateTransactionDto) {
     try {
       const result = await this.prisma.$transaction(
         async (tx: Prisma.TransactionClient) => {
-          // Accounts laden
           const from = await tx.account.findUnique({
             where: { iban: dto.fromIban },
           });
@@ -96,7 +144,7 @@ export class TransactionService {
     }
   }
 
-  /* async findAll() {
+  async findAll() {
     return this.prisma.transaction.findMany();
   }
 

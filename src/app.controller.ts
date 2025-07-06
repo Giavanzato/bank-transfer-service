@@ -14,4 +14,9 @@ export class AppController {
   async seedData() {
     return await this.appService.seed();
   }
+
+  @Get('reset')
+  async resetData() {
+    return await this.appService.reset();
+  }
 }

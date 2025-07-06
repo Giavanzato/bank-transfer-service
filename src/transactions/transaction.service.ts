@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -61,6 +62,9 @@ export class TransactionService {
         });
       });
     } catch (e) {
+      if (e instanceof NotFoundException || e instanceof BadRequestException) {
+        throw e; // original Fehler (inkl. eigener Nachricht) weiterreichen!
+      }
       throw new InternalServerErrorException('Transaktion fehlgeschlagen');
     }
   }

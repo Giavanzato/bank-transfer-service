@@ -1,16 +1,8 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBody, ApiResponse } from '@nestjs/swagger';
 import { Transaction } from './entities/transaction.entity';
 
 @ApiTags('Transaction')
@@ -20,12 +12,92 @@ export class TransactionController {
 
   @Post()
   @ApiOperation({ summary: 'Erstelle neue Überweisung' })
-  @ApiResponse({ status: 201, type: Transaction })
+  @ApiBody({
+    schema: {
+      example: {
+        fromIban: 'DE89370400440532013000',
+        toIban: 'DE75512108001245126199',
+        amount: 1100,
+        purpose: 'Test Überziehungslimit',
+      },
+    },
+    description: 'Beispiel: Überziehungslimit überschritten',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Transaktion erfolgreich',
+    type: Transaction,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Überziehungslimit überschritten',
+    content: {
+      'application/json': {
+        example: {
+          success: false,
+          error: {
+            statusCode: 400,
+            message: 'Überziehungslimit überschritten',
+            error: 'BadRequestException',
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Tägliches Limit überschritten',
+    content: {
+      'application/json': {
+        example: {
+          success: false,
+          error: {
+            statusCode: 400,
+            message: 'Tägliches Limit von 100 EUR überschritten',
+            error: 'BadRequestException',
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'AML-Schwelle überschritten',
+    content: {
+      'application/json': {
+        example: {
+          success: false,
+          error: {
+            statusCode: 400,
+            message: 'Betrag übersteigt AML-Schwelle von 50 EUR',
+            error: 'BadRequestException',
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Konto nicht gefunden',
+    content: {
+      'application/json': {
+        example: {
+          success: false,
+          error: {
+            statusCode: 404,
+            message: 'Konto nicht gefunden',
+            error: 'NotFoundException',
+          },
+        },
+      },
+    },
+  })
   async create(@Body() dto: CreateTransactionDto) {
     return this.transactionService.createTransaction(dto);
   }
+}
 
-  /* @Get()
+/* @Get()
   @ApiOperation({ summary: 'Liste alle Überweisungen' })
   @ApiResponse({ status: 200, type: [TransferEntity] })
   async findAll() {
@@ -53,4 +125,3 @@ export class TransactionController {
   async remove(@Param('id') id: string) {
     return this.transfersService.remove(id);
   } */
-}

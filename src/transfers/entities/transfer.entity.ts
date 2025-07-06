@@ -11,7 +11,7 @@ export class TransferEntity {
   toAccountId: string;
 
   @ApiProperty({ description: 'Betrag' })
-  amount: string; // Prisma gibt Decimal als string zurück
+  amount: string;
 
   @ApiProperty({ description: 'Verwendungszweck' })
   purpose: string;

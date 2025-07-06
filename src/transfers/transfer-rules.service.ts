@@ -1,4 +1,3 @@
-// src/transfers/transfer-rules.service.ts
 import {
   BadRequestException,
   InternalServerErrorException,
@@ -7,15 +6,11 @@ import Decimal from 'decimal.js';
 import { Prisma } from '@prisma/client';
 
 export class TransferRulesService {
-  /**
-   * Prüft, ob after = balance - amount >= -limit.
-   */
   static ensureSufficientFundsAndLimit(
     balance: Decimal,
     limit: Decimal,
     amount: number,
   ) {
-    // Kein Try/Catch nötig!
     const after = new Decimal(balance).minus(amount);
     if (after.lt(new Decimal(limit).neg())) {
       throw new BadRequestException('Überziehungslimit überschritten');

@@ -4,15 +4,11 @@ import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
-// Importiere deine globalen Hilfsklassen
-
 import { GlobalApiExceptionFilter } from './common/filters/global-api-exception.filter';
 import { ApiResponseInterceptor } from './common/interceptors/api-response.interceptors';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
-  // Globale DTO-Validierung aktivieren
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -31,8 +27,8 @@ async function bootstrap() {
     .setTitle('Bank Transfer Service')
     .setDescription('API-Dokumentation aller Endpunkte')
     .setVersion('1.0')
-    // .addBearerAuth()
     .build();
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 

@@ -14,7 +14,6 @@ export class AppService {
     accountB: any;
     transaction: any;
   }> {
-    // 1) Accounts anlegen – jetzt mit dailyLimit und amlThreshold
     const accountA = await this.prisma.account.create({
       data: {
         firstName: 'Alice',

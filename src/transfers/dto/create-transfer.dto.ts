@@ -1,4 +1,3 @@
-// src/transfers/dto/create-transfer.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
 import { IsIBAN, IsNotEmpty, IsNumber, Min } from 'class-validator';
 import { Type } from 'class-transformer';

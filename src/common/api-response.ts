@@ -1,4 +1,3 @@
-// src/common/api-response.ts
 export interface CustomApiResponse<T = any> {
   success: boolean;
   message: string;
@@ -10,7 +9,6 @@ export interface CustomApiError {
   statusCode: number;
   message: string;
   error: string;
-  // Du könntest hier noch errorCode?: string; usw. ergänzen
 }
 
 export class ApiResponseHelper {

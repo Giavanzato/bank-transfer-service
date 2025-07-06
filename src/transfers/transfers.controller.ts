@@ -1,4 +1,3 @@
-// src/transfers/transfers.controller.ts
 import {
   Controller,
   Get,

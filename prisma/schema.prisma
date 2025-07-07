@@ -9,8 +9,7 @@ generator client {
 
 model Account {
     id           String        @id @default(uuid())
-    firstName    String
-    lastName     String
+    companyName  String
     iban         String        @unique
     currency     String        @default("EUR")
     balance      Decimal       @default(0.0)

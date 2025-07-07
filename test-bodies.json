@@ -1,27 +1,15 @@
 [
   {
     "fromIban": "DE89370400440532013000",
-    "toIban": "DE75512108001245126199",
-    "amount": 2000,
-    "purpose": "Test Überziehungslimit"
+    "toIban": "IR820540102680020817909002",
+    "amount": 200,
+    "purpose": "Test Sanktionsprüfung Iran"
   },
 
   {
-    "fromIban": "DE75512108001245126199",
-    "toIban": "DE89370400440532013000",
-    "amount": 20,
-    "purpose": "Test Tageslimit"
-  },
-  {
-    "fromIban": "DE44500105175407324931",
-    "toIban": "DE89370400440532013000",
-    "amount": 100,
-    "purpose": "Test AML"
-  },
-  {
-    "fromIban": "DE00000000000000000000",
-    "toIban": "DE89370400440532013000",
-    "amount": 10,
-    "purpose": "Test Konto nicht gefunden"
+    "fromIban": "DE89370400440532013000",
+    "toIban": "DE75512108001245126199",
+    "amount": 500,
+    "purpose": "Test erfolgreiche Transaktion"
   }
 ]

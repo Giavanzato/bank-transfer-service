@@ -72,6 +72,3 @@ Dieses Projekt ist ein **NestJS Backend mit Prisma ORM** und einer PostgreSQL-Da
     ```
 
 ---
-
-## 📁 Projektstruktur
-

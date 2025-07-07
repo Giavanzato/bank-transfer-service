@@ -16,12 +16,30 @@ export class TransactionController {
     schema: {
       example: {
         fromIban: 'DE89370400440532013000',
-        toIban: 'DE75512108001245126199',
-        amount: 1100,
-        purpose: 'Test Überziehungslimit',
+        toIban: 'IR820540102680020817909002', // Gültige Iran-IBAN
+        amount: 200,
+        purpose: 'Test Sanktionsprüfung Iran',
       },
     },
-    description: 'Beispiel: Überziehungslimit überschritten',
+    description:
+      'Beispiel: Überweisung nach Iran (wird durch Sanktionsprüfung abgelehnt)',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Sanktionsliste: Überweisung in sanktioniertes Land',
+    content: {
+      'application/json': {
+        example: {
+          success: false,
+          error: {
+            statusCode: 400,
+            message:
+              'Überweisungen in das Land IR sind aufgrund von Sanktionen nicht erlaubt',
+            error: 'BadRequestException',
+          },
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 201,
@@ -54,22 +72,6 @@ export class TransactionController {
           error: {
             statusCode: 400,
             message: 'Tägliches Limit von 100 EUR überschritten',
-            error: 'BadRequestException',
-          },
-        },
-      },
-    },
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'AML-Schwelle überschritten',
-    content: {
-      'application/json': {
-        example: {
-          success: false,
-          error: {
-            statusCode: 400,
-            message: 'Betrag übersteigt AML-Schwelle von 50 EUR',
             error: 'BadRequestException',
           },
         },

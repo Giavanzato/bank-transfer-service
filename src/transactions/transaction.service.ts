@@ -7,7 +7,12 @@ import {
 
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
-import { checkAml, checkDaily, checkFunds } from './transaction-rules.service';
+import {
+  checkAml,
+  checkDaily,
+  checkFunds,
+  checkSanctions,
+} from './transaction-rules.service';
 import Decimal from 'decimal.js';
 
 @Injectable()
@@ -30,7 +35,7 @@ export class TransactionService {
         if (!from || !to) throw new NotFoundException('Konto nicht gefunden');
 
         checkFunds(from.balance, from.limit, amount);
-        checkAml(amount, from.amlThreshold);
+        checkSanctions(to.iban);
         await checkDaily(tx, from.id, amount, from.dailyLimit);
 
         const afterFrom = new Decimal(from.balance).minus(amount);

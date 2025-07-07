@@ -7,7 +7,7 @@ export class AppService {
   getHello(): string {
     return `
     Willkommen zur Demo-API für Überweisungen im Zahlungsverkehr!
-    Diese API demonstriert, wie eine bankfachliche Transaktion, nachvollziehbar und regelbasiert verarbeitet werden – inklusive Prüfungen wie Kontosaldo, Tageslimit und Anti-Geldwäsche-Vorgaben.
+    Diese API demonstriert, wie eine bankfachliche Transaktion, nachvollziehbar und regelbasiert verarbeitet werden – inklusive Prüfungen wie Kontosaldo, Tageslimit und Blacklists.
     **Wichtig:** Bitte rufen Sie vor der ersten Überweisung den /seed-Endpoint auf, um Testdaten (z.B. Beispielkonten) zu generieren.
     Danach können Sie Überweisungen via /transaction anstoßen und die verschiedenen Prüf- und Fehlermechanismen nachvollziehen.
     Viel Spaß beim Testen!
@@ -17,45 +17,40 @@ export class AppService {
   async seed(): Promise<{
     alice: any;
     bob: any;
-    charlie: any;
+    iran: any;
     transactions: any[];
   }> {
     const alice = await this.prisma.account.create({
       data: {
-        firstName: 'Alice',
-        lastName: 'Muster',
-        iban: 'DE89370400440532013000', // 1000 EUR, Limit 0
+        companyName: 'Alice GmbH',
+        iban: 'DE89370400440532013000',
         currency: 'EUR',
         balance: 1000,
         limit: 0,
         dailyLimit: 5000,
-        amlThreshold: 10000,
       },
     });
 
     const bob = await this.prisma.account.create({
       data: {
-        firstName: 'Bob',
-        lastName: 'Tageslimit',
-        iban: 'DE75512108001245126199', // 1000 EUR, Tageslimit 100
+        companyName: 'Bob AG',
+        iban: 'DE75512108001245126199',
         currency: 'EUR',
         balance: 1000,
         limit: 0,
         dailyLimit: 100,
-        amlThreshold: 10000,
       },
     });
 
-    const charlie = await this.prisma.account.create({
+    // Iranischer Testkunde mit gültiger IBAN
+    const iran = await this.prisma.account.create({
       data: {
-        firstName: 'Charlie',
-        lastName: 'AMLTest',
-        iban: 'DE44500105175407324931', // 1000 EUR, AML-Schwelle 50
-        currency: 'EUR',
+        companyName: 'Tehran Export LLC',
+        iban: 'IR820540102680020817909002', // Gültige IR-IBAN
+        currency: 'IRR',
         balance: 1000,
         limit: 0,
-        dailyLimit: 5000,
-        amlThreshold: 50,
+        dailyLimit: 10000,
       },
     });
 
@@ -74,11 +69,26 @@ export class AppService {
       },
     });
 
+    // Testüberweisung nach Iran (wird durch Sanktions-Check geblockt!)
+    const txAliceToIran = await this.prisma.transaction.create({
+      data: {
+        fromAccountId: alice.id,
+        toAccountId: iran.id,
+        amount: 200,
+        purpose: 'Test Sanktionsprüfung',
+        status: 'SUCCESS',
+        balanceBeforeFrom: 1000,
+        balanceAfterFrom: 800,
+        balanceBeforeTo: 1000,
+        balanceAfterTo: 1200,
+      },
+    });
+
     return {
       alice,
       bob,
-      charlie,
-      transactions: [txBob1],
+      iran,
+      transactions: [txBob1, txAliceToIran],
     };
   }
 

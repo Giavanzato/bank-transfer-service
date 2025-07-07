@@ -42,3 +42,21 @@ export async function checkDaily(
     );
   }
 }
+
+export function getCountryCodeFromIban(iban: string): string {
+  if (typeof iban !== 'string' || iban.length < 2) {
+    throw new BadRequestException('Ungültige IBAN');
+  }
+  return iban.substring(0, 2).toUpperCase();
+}
+
+const SANCTIONED_COUNTRIES: string[] = ['RU', 'BY', 'IR', 'KP', 'SY', 'CU'];
+
+export function checkSanctions(iban: string): void {
+  const countryCode = getCountryCodeFromIban(iban);
+  if (SANCTIONED_COUNTRIES.includes(countryCode)) {
+    throw new BadRequestException(
+      `Überweisungen in das Land ${countryCode} sind aufgrund von Sanktionen nicht erlaubt`,
+    );
+  }
+}
